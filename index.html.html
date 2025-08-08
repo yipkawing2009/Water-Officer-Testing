@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <title>消防水量計算工具</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    label { display: block; margin-top: 10px; }
+    input[type="number"] { width: 100%; padding: 6px; margin-top: 4px; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+    .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+    .ok { color: green; }
+    .warn { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h2>消防用水計算工具</h2>
+
+  <label>🔥 所需出水量（L/min）：
+    <input type="number" id="requiredFlow" value="3000">
+  </label>
+
+  <label>⏱️ 使用時間（分鐘）：
+    <input type="number" id="duration" value="20">
+  </label>
+
+  <label>🚒 泵車數量：
+    <input type="number" id="pumps" value="2">
+  </label>
+
+  <label>💧 每輛泵車水缸容量（L）：
+    <input type="number" id="pumpTank" value="1800">
+  </label>
+
+  <label>🪜 升降台數量：
+    <input type="number" id="aerials" value="1">
+  </label>
+
+  <label>💧 每部升降台水缸容量（L）：
+    <input type="number" id="aerialTank" value="1360">
+  </label>
+
+  <label>🌊 街井出水量（L/min）：
+    <input type="number" id="hydrantFlow" value="2500">
+  </label>
+
+  <label>🧱 已開街井數量：
+    <input type="number" id="hydrants" value="1">
+  </label>
+
+  <button onclick="calculate()">計算</button>
+
+  <div class="result" id="output"></div>
+
+  <script>
+    function calculate() {
+      // 讀取輸入值
+      const requiredFlow = parseFloat(document.getElementById('requiredFlow').value);
+      const duration = parseFloat(document.getElementById('duration').value);
+      const pumps = parseFloat(document.getElementById('pumps').value);
+      const pumpTank = parseFloat(document.getElementById('pumpTank').value);
+      const aerials = parseFloat(document.getElementById('aerials').value);
+      const aerialTank = parseFloat(document.getElementById('aerialTank').value);
+      const hydrantFlow = parseFloat(document.getElementById('hydrantFlow').value);
+      const hydrants = parseFloat(document.getElementById('hydrants').value);
+
+      // 計算總需水量
+      const totalRequiredWater = requiredFlow * duration;
+
+      // 可用水量 = 車上水缸 + 街井供水
+      const tankWater = (pumps * pumpTank) + (aerials * aerialTank);
+      const hydrantWater = hydrantFlow * hydrants * duration;
+      const totalAvailableWater = tankWater + hydrantWater;
+
+      // 建議開街井數
+      const requiredHydrantWater = totalRequiredWater - tankWater;
+      const suggestedHydrants = Math.ceil(requiredHydrantWater / (hydrantFlow * duration));
+
+      // 建議2½"喉數量（每條平均出水500L/min）
+      const suggestedHoses = Math.ceil(requiredFlow / 500);
+
+      // 是否足夠
+      const waterEnough = totalAvailableWater >= totalRequiredWater;
+
+      // 輸出
+      document.getElementById('output').innerHTML = `
+        ✅ <strong>總需水量：</strong> ${totalRequiredWater} L<br>
+        💧 <strong>總可提供水量：</strong> ${totalAvailableWater} L<br>
+        ${waterEnough ? '<span class="ok">✔ 水量足夠</span>' : '<span class="warn">⚠ 水量不足！</span>'}<br>
+        🚰 <strong>建議街井數量：</strong> ${suggestedHydrants} 個<br>
+        🔥 <strong>建議使用喉數（2½"）：</strong> ${suggestedHoses} 條
+      `;
+    }
+  </script>
+
+</body>
+</html>
